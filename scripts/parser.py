@@ -1,7 +1,8 @@
 """Build influencer image galleries from the influencers directory.
 
-By default the script converts, deduplicates, renames images, and updates only
-the JSON ``images`` keys. Use --preview to print the plan without changes.
+By default the script converts, deduplicates, renames images, creates gallery
+thumbnails, and updates the JSON image paths. Use --preview to print the plan
+without changes.
 """
 
 from __future__ import annotations
@@ -23,6 +24,8 @@ PROFILE_NAMES = {"profile", "profile-image", "profile_image"}
 HASH_SIZE = 32
 AHASH_SIZE = 16
 AHASH_DISTANCE_LIMIT = 4
+THUMBNAIL_FOLDER = "thumbnails"
+THUMBNAIL_SIZE = (400, 500)
 
 
 @dataclass
@@ -109,7 +112,8 @@ def collect_candidates(folder: Path) -> tuple[list[ImageCandidate], list[Path]]:
 	duplicates: list[Path] = []
 
 	for path in sorted(folder.rglob("*")):
-		if not is_gallery_image(path) or is_profile_image(path):
+		relative_parts = path.relative_to(folder).parts
+		if THUMBNAIL_FOLDER in relative_parts or not is_gallery_image(path) or is_profile_image(path):
 			continue
 
 		try:
@@ -133,6 +137,14 @@ def convert_to_jpg(source: Path, target: Path) -> None:
 		image.save(target, "JPEG", quality=95, optimize=True)
 
 
+def create_thumbnail(source: Path, target: Path) -> None:
+	target.parent.mkdir(parents=True, exist_ok=True)
+	with Image.open(source) as source_image:
+		image = ImageOps.exif_transpose(source_image).convert("RGB")
+		image.thumbnail(THUMBNAIL_SIZE, Image.Resampling.LANCZOS)
+		image.save(target, "JPEG", quality=85, optimize=True)
+
+
 def relative_json_path(path: Path, project_root: Path) -> str:
 	return path.relative_to(project_root).as_posix()
 
@@ -141,11 +153,13 @@ def process_folder(
 	folder: Path,
 	project_root: Path,
 	apply_changes: bool,
-) -> tuple[list[str], int, int]:
+) -> tuple[list[str], list[str], int, int]:
 	code = folder.name
 	candidates, duplicates = collect_candidates(folder)
 	image_paths: list[str] = []
+	thumbnail_paths: list[str] = []
 	temporary_folder = folder / ".parser-tmp"
+	thumbnail_folder = folder / THUMBNAIL_FOLDER
 
 	print(f"{folder.relative_to(project_root)}: {len(candidates)} zdjęć, {len(duplicates)} duplikatów")
 
@@ -154,7 +168,11 @@ def process_folder(
 			relative_json_path(folder / f"{code}-{index:06d}.jpg", project_root)
 			for index in range(1, len(candidates) + 1)
 		]
-		return image_paths, len(duplicates), len(candidates)
+		thumbnail_paths = [
+			relative_json_path(thumbnail_folder / f"{code}-{index:06d}.jpg", project_root)
+			for index in range(1, len(candidates) + 1)
+		]
+		return image_paths, thumbnail_paths, len(duplicates), len(candidates)
 
 	try:
 		temporary_folder.mkdir(exist_ok=True)
@@ -171,18 +189,23 @@ def process_folder(
 		for duplicate in duplicates:
 			if duplicate.exists():
 				duplicate.unlink()
+		if thumbnail_folder.exists():
+			shutil.rmtree(thumbnail_folder)
 
 		for staged_path in staged_paths:
 			target = folder / staged_path.name
 			if target.exists():
 				target.unlink()
 			staged_path.replace(target)
+			thumbnail_path = thumbnail_folder / staged_path.name
+			create_thumbnail(target, thumbnail_path)
 			image_paths.append(relative_json_path(target, project_root))
+			thumbnail_paths.append(relative_json_path(thumbnail_path, project_root))
 	finally:
 		if temporary_folder.exists():
 			shutil.rmtree(temporary_folder)
 
-	return image_paths, len(duplicates), len(candidates)
+	return image_paths, thumbnail_paths, len(duplicates), len(candidates)
 
 
 def load_json(json_path: Path) -> list[dict[str, Any]]:
@@ -196,13 +219,17 @@ def load_json(json_path: Path) -> list[dict[str, Any]]:
 
 def update_images(
 	data: list[dict[str, Any]],
-	processed: dict[tuple[str, str], list[str]],
+	processed: dict[tuple[str, str], tuple[list[str], list[str]]],
 ) -> int:
 	updated = 0
 	for influencer in data:
 		key = (str(influencer.get("group", "")), str(influencer.get("code", "")))
-		if key in processed and influencer.get("images") != processed[key]:
-			influencer["images"] = processed[key]
+		if key in processed:
+			images, thumbnails = processed[key]
+			if influencer.get("images") == images and influencer.get("thumbnails") == thumbnails:
+				continue
+			influencer["images"] = images
+			influencer["thumbnails"] = thumbnails
 			updated += 1
 	return updated
 
@@ -220,11 +247,11 @@ def main() -> int:
 		return 1
 
 	data = load_json(json_path)
-	processed: dict[tuple[str, str], list[str]] = {}
+	processed: dict[tuple[str, str], tuple[list[str], list[str]]] = {}
 	for group_folder in sorted(path for path in influencers_root.iterdir() if path.is_dir()):
 		for influencer_folder in sorted(path for path in group_folder.iterdir() if path.is_dir()):
-			image_paths, _, _ = process_folder(influencer_folder, project_root, not args.preview)
-			processed[(group_folder.name, influencer_folder.name)] = image_paths
+			image_paths, thumbnail_paths, _, _ = process_folder(influencer_folder, project_root, not args.preview)
+			processed[(group_folder.name, influencer_folder.name)] = (image_paths, thumbnail_paths)
 
 	if not args.preview:
 		updated = update_images(data, processed)

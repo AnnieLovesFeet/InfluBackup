@@ -17,6 +17,18 @@
             "influencers/ekipa/W3R0N1K4/W3R0N1K4-000008.jpg",
             "influencers/ekipa/W3R0N1K4/W3R0N1K4-000009.jpg",
             "influencers/ekipa/W3R0N1K4/W3R0N1K4-000010.jpg"
+        ],
+        "thumbnails": [
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000001.jpg",
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000002.jpg",
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000003.jpg",
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000004.jpg",
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000005.jpg",
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000006.jpg",
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000007.jpg",
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000008.jpg",
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000009.jpg",
+            "influencers/ekipa/W3R0N1K4/thumbnails/W3R0N1K4-000010.jpg"
         ]
     },
     {
@@ -25,7 +37,9 @@
         "firstName": "Marcysia",
         "lastName": "Ryskala",
         "instagram": "ryskalamarcysia",
-        "profileImage": "influencers/ekipa/M4RCY514/profile.jpg"
+        "profileImage": "influencers/ekipa/M4RCY514/profile.jpg",
+        "images": [],
+        "thumbnails": []
     },
     {
         "code": "M4RT4",
@@ -33,7 +47,9 @@
         "firstName": "Marta",
         "lastName": "Błoch",
         "instagram": "murcix",
-        "profileImage": "influencers/ekipa/M4RT4/profile.jpg"
+        "profileImage": "influencers/ekipa/M4RT4/profile.jpg",
+        "images": [],
+        "thumbnails": []
     },
     {
         "code": "K4T4RZYN4",
@@ -41,7 +57,9 @@
         "firstName": "Katarzyna",
         "lastName": "Bożek",
         "instagram": "fusialka",
-        "profileImage": "influencers/ekipa/K4T4RZYN4/profile.jpg"
+        "profileImage": "influencers/ekipa/K4T4RZYN4/profile.jpg",
+        "images": [],
+        "thumbnails": []
     },
     {
         "code": "H4NN4",

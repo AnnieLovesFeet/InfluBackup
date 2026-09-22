@@ -15,8 +15,9 @@ class LightboxCloseButton {
 }
 
 class Gallery {
-	constructor(images = [], code = '') {
+	constructor(images = [], thumbnails = [], code = '') {
 		this.images = images;
+		this.thumbnails = thumbnails.length ? thumbnails : images;
 		this.code = code;
 		this.currentIndex = 0;
 		this.lightbox = null;
@@ -44,7 +45,7 @@ class Gallery {
 			return container;
 		}
 
-		const images = this.images.map((imagePath, index) => {
+		const images = this.thumbnails.map((imagePath, index) => {
 			const imageUrl = this.getImageUrl(imagePath);
 			const alt = `${this.code} - image ${index + 1}`;
 
@@ -174,7 +175,7 @@ async function renderGallery(group, code, jsonPath = '../../influencers.json') {
 			throw new Error(`Nie znaleziono galerii: ${group}/${code}`);
 		}
 
-		new Gallery(influencer.images || [], code).render(container);
+		new Gallery(influencer.images || [], influencer.thumbnails || [], code).render(container);
 	} catch (error) {
 		if (container) {
 			container.textContent = error.message;
