@@ -47,7 +47,11 @@ class Influencer {
 		const name = `${this.firstName} ${this.lastName}`.trim() || this.code;
 		const username = this.instagram.replace(/^@/, '');
 		const profileImageUrl = this.profileImage
-			? new URL(this.profileImage, `${window.location.origin}/`).href
+			? (() => {
+				const path = this.profileImage.replace(/^\.?\//, '');
+				const prefix = window.location.pathname.includes('/influencers/') ? '../../' : './';
+				return new URL(prefix + path, window.location.href).href;
+			})()
 			: '';
 		const image = this.profileImage
 			? `<img src="${this.escapeHtml(profileImageUrl)}" alt="Profile image of ${this.escapeHtml(name)}">`

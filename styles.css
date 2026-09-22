@@ -285,6 +285,11 @@ ul {
 }
 
 .gallery-empty {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
     padding: 16px;
     border-radius: 16px;
     background: linear-gradient(
@@ -292,6 +297,10 @@ ul {
         cornflowerblue,
         aqua
     );
+
+    font-weight: bold;
+
+    height: 128px;
 }
 
 .lightbox-open {

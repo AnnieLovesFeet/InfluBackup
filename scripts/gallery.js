@@ -71,7 +71,17 @@ class Gallery {
 	}
 
 	getImageUrl(imagePath) {
-		return new URL(imagePath, `${window.location.origin}/`).href;
+		if (!imagePath) {
+			return '';
+		}
+
+		if (/^https?:\/\//i.test(imagePath)) {
+			return imagePath;
+		}
+
+		const path = imagePath.replace(/^\.?\//, '');
+		const prefix = window.location.pathname.includes('/influencers/') ? '../../' : './';
+		return new URL(prefix + path, window.location.href).href;
 	}
 
 	openLightbox(index) {
